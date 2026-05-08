@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="fr">
 <title>LaLIC — Publications</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 0; background: #f5f5f5; }
@@ -12,7 +14,7 @@
   nav a { color: #ddd; text-decoration: none; font-size: 0.85em; }
   nav a:hover { color: white; }
   .layout { display: flex; }
-  .sidebar { width: 180px; flex-shrink: 0; background: white; border-right: 1px solid #ddd; padding: 16px; min-height: 600px; }
+  .sidebar { width: 190px; flex-shrink: 0; background: white; border-right: 1px solid #ddd; padding: 16px; min-height: 600px; }
   .sidebar h3 { font-size: 0.85em; color: #5a5a9a; margin: 12px 0 6px; }
   .sidebar a { display: block; font-size: 0.85em; color: #5a5a9a; text-decoration: none; padding: 3px 0; }
   .sidebar a:hover { color: #333; }
@@ -36,6 +38,7 @@
 <nav>
   <a href="index.html">Accueil</a>
   <a href="publications.html">Publications</a>
+  <a href="contact.html">Contact & Accès</a>
 </nav>
 <div class="layout">
   <div class="sidebar">
@@ -46,6 +49,7 @@
     <a href="#" id="btn-publications" onclick="filterType('publications',this);return false;">les Livres / Conf.</a>
     <a href="#" id="btn-theses" onclick="filterType('theses',this);return false;">les Thèses</a>
     <a href="#" id="btn-communications" onclick="filterType('communications',this);return false;">les Communications</a>
+    <a href="#" id="btn-confinvitees" onclick="filterType('confinvitees',this);return false;">les Conf. invitées</a>
   </div>
   <div class="main">
     <h2>Publications <span id="pub-count" class="count-badge">...</span></h2>
@@ -54,7 +58,6 @@
   </div>
 </div>
 <footer>© LaLIC, Université Paris-Sorbonne — Site archivé, reconstitué à partir de web.archive.org</footer>
-
 <script>
 let allPubs = [];
 let currentType = 'all';
@@ -113,16 +116,13 @@ function render() {
     p.title.toLowerCase().includes(currentSearch) ||
     p.venue.toLowerCase().includes(currentSearch)
   );
-
   document.getElementById('pub-count').textContent = pubs.length;
-
   const byYear = {};
   pubs.forEach(p => {
     const y = p.year || 'inconnu';
     if (!byYear[y]) byYear[y] = [];
     byYear[y].push(p);
   });
-
   const years = Object.keys(byYear).sort((a,b) => b.localeCompare(a));
   let html = '';
   let n = 1;
@@ -137,10 +137,8 @@ function render() {
       </div>`;
     });
   });
-
   document.getElementById('pub-list').innerHTML = html || '<p>Aucun résultat trouvé.</p>';
 }
-
 loadCSV();
 </script>
 </body>
