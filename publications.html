@@ -4,29 +4,27 @@
 <meta charset="UTF-8">
 <title>LaLIC — Publications</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
-  header { background: #5a5a9a; color: white; padding: 20px; margin-bottom: 0; }
+  body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 0; background: #f5f5f5; }
+  header { background: #5a5a9a; color: white; padding: 20px; }
   header h1 { margin: 0; font-size: 1.4em; }
   header p { margin: 4px 0 0; font-size: 0.9em; opacity: 0.85; }
   nav { background: #4a4a7a; padding: 8px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
   nav a { color: #ddd; text-decoration: none; font-size: 0.85em; }
   nav a:hover { color: white; }
-  .layout { display: flex; gap: 0; }
-  .sidebar { width: 180px; flex-shrink: 0; background: white; border-right: 1px solid #ddd; padding: 16px; }
-  .sidebar h3 { font-size: 0.85em; color: #5a5a9a; margin: 0 0 8px; }
+  .layout { display: flex; }
+  .sidebar { width: 180px; flex-shrink: 0; background: white; border-right: 1px solid #ddd; padding: 16px; min-height: 600px; }
+  .sidebar h3 { font-size: 0.85em; color: #5a5a9a; margin: 12px 0 6px; }
   .sidebar a { display: block; font-size: 0.85em; color: #5a5a9a; text-decoration: none; padding: 3px 0; }
-  .sidebar a:hover, .sidebar a.active { color: #333; font-weight: bold; }
+  .sidebar a:hover { color: #333; }
+  .sidebar a.active { color: #333; font-weight: bold; }
   .main { flex: 1; background: white; padding: 20px; }
   .main h2 { color: #5a5a9a; border-bottom: 2px solid #5a5a9a; padding-bottom: 6px; }
-  .year-group h3 { color: #5a5a9a; margin: 20px 0 8px; font-size: 1em; }
-  .pub-entry { margin: 8px 0; font-size: 0.9em; line-height: 1.6; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+  .year-label { color: #5a5a9a; font-size: 1em; font-weight: bold; margin: 20px 0 6px; }
+  .pub-entry { margin: 0 0 10px 0; font-size: 0.88em; line-height: 1.6; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
   .pub-entry .authors { font-weight: bold; }
   .pub-entry .title { font-style: italic; }
-  .category-btn { display: inline-block; margin: 4px; padding: 6px 14px; background: white; border: 1px solid #5a5a9a; color: #5a5a9a; border-radius: 4px; cursor: pointer; font-size: 0.85em; text-decoration: none; }
-  .category-btn:hover, .category-btn.active { background: #5a5a9a; color: white; }
-  #search-box { width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; box-sizing: border-box; }
   .count-badge { background: #5a5a9a; color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75em; margin-left: 6px; }
-  .hidden { display: none; }
+  #search-box { width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; box-sizing: border-box; }
   footer { text-align: center; padding: 20px; font-size: 0.8em; color: #999; }
 </style>
 </head>
@@ -39,47 +37,28 @@
   <a href="index.html">Accueil</a>
   <a href="publications.html">Publications</a>
 </nav>
-
 <div class="layout">
   <div class="sidebar">
     <h3>Rechercher dans</h3>
-    <a href="#" class="active" onclick="filterType('all');return false;">toutes les publications</a>
-    <br><h3 style="margin-top:12px">Par catégorie</h3>
-    <a href="#" onclick="filterType('revues');return false;">les Revues</a>
-    <a href="#" onclick="filterType('publications');return false;">les Livres / Conf.</a>
-    <a href="#" onclick="filterType('theses');return false;">les Thèses</a>
-    <a href="#" onclick="filterType('communications');return false;">les Communications</a>
+    <a href="#" id="btn-all" class="active" onclick="filterType('all',this);return false;">toutes les publications</a>
+    <h3>Par catégorie</h3>
+    <a href="#" id="btn-revues" onclick="filterType('revues',this);return false;">les Revues</a>
+    <a href="#" id="btn-publications" onclick="filterType('publications',this);return false;">les Livres / Conf.</a>
+    <a href="#" id="btn-theses" onclick="filterType('theses',this);return false;">les Thèses</a>
+    <a href="#" id="btn-communications" onclick="filterType('communications',this);return false;">les Communications</a>
   </div>
   <div class="main">
     <h2>Publications <span id="pub-count" class="count-badge">...</span></h2>
-    <input type="text" id="search-box" placeholder="Rechercher par auteur ou titre..." oninput="filterSearch()">
-    <div id="pub-list">Chargement...</div>
+    <input type="text" id="search-box" placeholder="Rechercher par auteur, titre ou revue..." oninput="filterSearch()">
+    <div id="pub-list">Chargement en cours...</div>
   </div>
 </div>
-
 <footer>© LaLIC, Université Paris-Sorbonne — Site archivé, reconstitué à partir de web.archive.org</footer>
 
 <script>
 let allPubs = [];
 let currentType = 'all';
 let currentSearch = '';
-
-async function loadCSV() {
-  const resp = await fetch('publications_clean.csv');
-  const text = await resp.text();
-  const lines = text.split('\n');
-  const headers = lines[0].split(',');
-  allPubs = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    // Handle quoted fields
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length >= 5) {
-      allPubs.push({ type: cols[0], year: cols[1], authors: cols[2], title: cols[3], venue: cols[4] });
-    }
-  }
-  render();
-}
 
 function parseCSVLine(line) {
   const result = [];
@@ -95,10 +74,29 @@ function parseCSVLine(line) {
   return result;
 }
 
-function filterType(type) {
+async function loadCSV() {
+  try {
+    const resp = await fetch('publications_clean.csv');
+    const text = await resp.text();
+    const lines = text.split('\n');
+    allPubs = [];
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const cols = parseCSVLine(lines[i]);
+      if (cols.length >= 5) {
+        allPubs.push({ type: cols[0], year: cols[1], authors: cols[2], title: cols[3], venue: cols[4] });
+      }
+    }
+    render();
+  } catch(e) {
+    document.getElementById('pub-list').innerHTML = '<p>Erreur de chargement: ' + e + '</p>';
+  }
+}
+
+function filterType(type, el) {
   currentType = type;
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   render();
 }
 
@@ -118,30 +116,29 @@ function render() {
 
   document.getElementById('pub-count').textContent = pubs.length;
 
-  // Group by year descending
   const byYear = {};
   pubs.forEach(p => {
-    if (!byYear[p.year]) byYear[p.year] = [];
-    byYear[p.year].push(p);
+    const y = p.year || 'inconnu';
+    if (!byYear[y]) byYear[y] = [];
+    byYear[y].push(p);
   });
 
   const years = Object.keys(byYear).sort((a,b) => b.localeCompare(a));
   let html = '';
   let n = 1;
   years.forEach(year => {
-    html += `<div class="year-group"><h3>${year}</h3>`;
+    html += `<div class="year-label">${year}</div>`;
     byYear[year].forEach(p => {
       html += `<div class="pub-entry">
-        ${n++}. <span class="authors">${p.authors}</span>
-        ${p.year ? '('+p.year+')' : ''},
-        <span class="title">"${p.title}"</span>
-        ${p.venue ? ', ' + p.venue : ''}
+        <span>${n++}.</span>
+        <span class="authors">${p.authors}</span>
+        (${p.year}),
+        <span class="title">&ldquo;${p.title}&rdquo;</span>${p.venue ? ', ' + p.venue : ''}.
       </div>`;
     });
-    html += '</div>';
   });
 
-  document.getElementById('pub-list').innerHTML = html || '<p>Aucun résultat.</p>';
+  document.getElementById('pub-list').innerHTML = html || '<p>Aucun résultat trouvé.</p>';
 }
 
 loadCSV();
